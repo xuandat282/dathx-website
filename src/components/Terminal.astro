@@ -1,0 +1,135 @@
+---
+import { PROFILE, PROJECTS, SKILLS, EXPERIENCE } from "../consts";
+
+const projectsJson = JSON.stringify(
+  PROJECTS.map((p) => ({ id: p.id, title: p.title, company: p.company, metrics: p.metrics ?? "" })),
+);
+const skillsJson = JSON.stringify(SKILLS.map((s) => s.category));
+---
+
+<figure class="term-frame" aria-label="Interactive terminal">
+  <div class="term-frame__label" aria-hidden="true">
+    <span>dathx@edge: ~</span><span>utf-8 · bash</span>
+  </div>
+  <div class="term-frame__body">
+    <div id="term-log" aria-live="polite" aria-label="Terminal output"></div>
+    <form id="term-form" class="term-inputrow" autocomplete="off">
+      <span class="p" aria-hidden="true">&gt;</span>
+      <label class="visually-hidden" for="term-input">Terminal command input</label>
+      <input
+        id="term-input"
+        class="term-input"
+        name="cmd"
+        type="text"
+        spellcheck="false"
+        autocapitalize="off"
+        placeholder="type `help`"
+        aria-describedby="term-hint"
+      />
+    </form>
+    <p class="term-hint" id="term-hint">commands: <kbd>help</kbd> <kbd>whoami</kbd> <kbd>projects</kbd> <kbd>skills</kbd> <kbd>contact</kbd> <kbd>clear</kbd> · ↑/↓ history</p>
+  </div>
+</figure>
+
+<script define:vars={{ projectsJson, skillsJson, profileName: PROFILE.name, profileRole: PROFILE.role, profileEmail: PROFILE.email, profilePhone: PROFILE.phone, expCount: EXPERIENCE.length, projectCount: PROJECTS.length, skillCount: SKILLS.length }}>
+  const log = document.getElementById("term-log");
+  const form = document.getElementById("term-form");
+  const input = document.getElementById("term-input");
+  const projects = JSON.parse(projectsJson);
+  const skillCats = JSON.parse(skillsJson);
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const history = [];
+  let hIndex = -1;
+
+  function esc(s) {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+  function printLine(cmd, html, cls, scroll) {
+    const p = document.createElement("p");
+    p.className = "term-line " + (cls || "term-out");
+    if (cmd !== null) {
+      const echo = document.createElement("span");
+      echo.innerHTML = '<span class="p">&gt;</span> ' + esc(cmd);
+      p.appendChild(echo);
+      const out = document.createElement("span");
+      out.innerHTML = "<br>" + html;
+      p.appendChild(out);
+    } else {
+      p.innerHTML = html;
+    }
+    log.appendChild(p);
+    if (scroll) {
+      p.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "nearest" });
+    }
+  }
+
+  const COMMANDS = {
+    help: () =>
+      "whoami — identity · projects — " + projectCount + " shipped systems · skills — " + skillCount + " groups · experience — " +
+      expCount + " roles · contact — email + phone · clear — wipe scrollback",
+    whoami: () => esc(profileName) + '<br><span class="dim">' + esc(profileRole) + "</span>",
+    projects: () => projects.map((p) => esc(p.id) + " · " + esc(p.title)).join("<br>"),
+    skills: () => skillCats.map((c) => esc(c)).join("<br>"),
+    experience: () => "4 roles · 2022 → present · see #experience below",
+    contact: () => esc(profileEmail) + " · " + esc(profilePhone),
+    hire: () => 'good call. email <span class="dim">' + esc(profileEmail) + "</span> — replies within 48h.",
+    sudo: () => "permission denied: you are a guest, not root.",
+  };
+
+  function run(raw) {
+    const cmd = raw.trim().toLowerCase();
+    if (!cmd) return;
+    if (cmd === "clear") {
+      log.innerHTML = "";
+      return;
+    }
+    const [base, ...args] = cmd.split(/\s+/);
+    if (base === "projects" && args.length > 0) {
+      const found = projects.find((p) => p.id === args.join("-"));
+      printLine(raw, found ? esc(found.title) + '<br><span class="dim">' + esc(found.company) + (found.metrics ? " · " + esc(found.metrics) : "") + "</span>" : "unknown project id. try `projects`.", found ? "" : "term-err", true);
+      return;
+    }
+    if (COMMANDS[base]) {
+      printLine(raw, COMMANDS[base](), "", true);
+    } else {
+      printLine(raw, "command not found: " + esc(base) + '. try `help`.', "term-err", true);
+    }
+  }
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const v = input.value;
+    if (v.trim()) {
+      history.unshift(v);
+      hIndex = -1;
+    }
+    run(v);
+    input.value = "";
+    input.focus();
+  });
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+      if (hIndex < history.length - 1) {
+        hIndex += 1;
+        input.value = history[hIndex] || "";
+      }
+    } else if (e.key === "ArrowDown") {
+      e.preventDefault();
+      if (hIndex > 0) {
+        hIndex -= 1;
+        input.value = history[hIndex] || "";
+      } else {
+        hIndex = -1;
+        input.value = "";
+      }
+    }
+  });
+
+  const boot = ["whoami", "projects"];
+  if (reduceMotion) {
+    boot.forEach((c) => printLine(null, '<span class="p">&gt;</span> ' + esc(c) + "<br>" + COMMANDS[c]()));
+  } else {
+    boot.forEach((c, i) => setTimeout(() => printLine(null, '<span class="p">&gt;</span> ' + esc(c) + "<br>" + COMMANDS[c]()), 350 * (i + 1)));
+  }
+</script>

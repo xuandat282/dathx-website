@@ -1,0 +1,1 @@
+{"framework": "Astro 5.16.9 + Cloudflare adapter + MDX + sitemap","motion": "none (motion-cut)","palette": "Bear Blog tokens, --accent #2337ff, no OKLCH (src/styles/global.css)","preserved": ["Astro routes", "src/consts.ts CV data", "blog/about pages", "Cloudflare deploy"],"sans": "Atkinson WOFF2 (src/styles/global.css)","scanned": "2026-09-15","spacing": "no scale"}

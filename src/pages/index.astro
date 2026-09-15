@@ -1,50 +1,141 @@
 ---
-import BaseHead from '../components/BaseHead.astro';
-import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro';
-import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
+import BaseHead from "../components/BaseHead.astro";
+import Terminal from "../components/Terminal.astro";
+import "../styles/terminal.css";
+import { SITE_TITLE, SITE_DESCRIPTION, PROFILE, SKILLS, PROJECTS, EXPERIENCE, EDUCATION } from "../consts";
 ---
 
 <!doctype html>
 <html lang="en">
-	<head>
-		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
-	</head>
-	<body>
-		<Header />
-		<main>
-			<h1>🧑‍🚀 Hello, Astronaut!</h1>
-			<p>
-				Welcome to the official <a href="https://astro.build/">Astro</a> blog starter template. This
-				template serves as a lightweight, minimally-styled starting point for anyone looking to build
-				a personal website, blog, or portfolio with Astro.
-			</p>
-			<p>
-				This template comes with a few integrations already configured in your
-				<code>astro.config.mjs</code> file. You can customize your setup with
-				<a href="https://astro.build/integrations">Astro Integrations</a> to add tools like Tailwind,
-				React, or Vue to your project.
-			</p>
-			<p>Here are a few ideas on how to get started with the template:</p>
-			<ul>
-				<li>Edit this page in <code>src/pages/index.astro</code></li>
-				<li>Edit the site header items in <code>src/components/Header.astro</code></li>
-				<li>Add your name to the footer in <code>src/components/Footer.astro</code></li>
-				<li>Check out the included blog posts in <code>src/content/blog/</code></li>
-				<li>Customize the blog post page layout in <code>src/layouts/BlogPost.astro</code></li>
-			</ul>
-			<p>
-				Have fun! If you get stuck, remember to <a href="https://docs.astro.build/"
-					>read the docs
-				</a> or <a href="https://astro.build/chat">join us on Discord</a> to ask questions.
-			</p>
-			<p>
-				Looking for a blog template with a bit more personality? Check out <a
-					href="https://github.com/Charca/astro-blog-template"
-					>astro-blog-template
-				</a> by <a href="https://twitter.com/Charca">Maxi Ferreira</a>.
-			</p>
-		</main>
-		<Footer />
-	</body>
+  <head>
+    <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} image="/og-image.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="term">
+    <a class="term-skip" href="#main">Skip to content</a>
+
+    <header class="nav-term">
+      <pre class="nav-term__line"><span class="prompt">&gt;</span> dathx <a href="#work">--projects</a> <a href="#skills">--skills</a> <a href="#experience">--experience</a> <a href="#contact">--contact</a><span class="nav-term__caret" aria-hidden="true">▮</span></pre>
+    </header>
+
+    <main id="main" class="term-wrap">
+      <section class="term-hero reveal" style="--i: 0" aria-labelledby="hero-h">
+        <h1 class="term-hero__display" id="hero-h">
+          <span class="fn">whoami</span> — systems that see, listen, and report back.
+        </h1>
+        <p class="term-lede">{PROFILE.summary}</p>
+        <ul class="term-meta">
+          <li>{PROFILE.location}</li>
+          <li><a href="mailto:{PROFILE.email}">{PROFILE.email}</a></li>
+          <li><a href="tel:+84797051900">{PROFILE.phone}</a></li>
+        </ul>
+        <Terminal />
+        <div class="term-actions">
+          <a class="tlink" href="mailto:{PROFILE.email}">Email me →</a>
+          <button class="chip" type="button" data-copy={PROFILE.email}>Copy email</button>
+          <a class="tlink" href="#work">Read the work →</a>
+        </div>
+      </section>
+
+      <section class="term-section reveal" style="--i: 1" id="work" aria-labelledby="work-h">
+        <h2 id="work-h"><span class="p">$</span> cat projects/*.md</h2>
+        <p class="term-section__note">{PROJECTS.length} shipped systems. Each block carries its stack and the one number that matters — all measured, none invented.</p>
+        <div class="play-grid">
+          {
+            PROJECTS.map((p) => (
+              <article class="play-block">
+                <div class="play-block__head">
+                  <h3>{p.title}</h3>
+                </div>
+                <p class="play-block__id">{p.id} · {p.company} · {p.period}</p>
+                {p.metrics && <p class="play-block__metrics">{p.metrics}</p>}
+                <p class="play-block__blurb">{p.blurb}</p>
+                <ul class="play-block__stack">
+                  {p.stack.split(", ").map((s) => (
+                    <li>{s}</li>
+                  ))}
+                </ul>
+                <button class="chip" type="button" data-copy={p.stack}>Copy stack</button>
+              </article>
+            ))
+          }
+        </div>
+      </section>
+
+      <section class="term-section term-section--tight reveal" style="--i: 2" id="skills" aria-labelledby="skills-h">
+        <h2 id="skills-h"><span class="p">$</span> lshw --short</h2>
+        <p class="term-section__note">Capability inventory, grouped the way clients buy it.</p>
+        <table class="spec">
+          <caption>{SKILLS.length} groups, from silicon to dashboard.</caption>
+          <tbody>
+            {
+              SKILLS.map((s) => (
+                <tr>
+                  <th scope="row">{s.category}</th>
+                  <td>{s.items}</td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </section>
+
+      <section class="term-section term-section--tight reveal" style="--i: 3" id="experience" aria-labelledby="exp-h">
+        <h2 id="exp-h"><span class="p">$</span> history --work</h2>
+        <p class="term-section__note">Four roles, 2022 to present.</p>
+        <ol class="steps">
+          {
+            EXPERIENCE.map((j, i) => (
+              <li>
+                <span class="steps__n">0{i + 1}</span>
+                <div>
+                  <p class="steps__role">{j.role}</p>
+                  <p class="steps__co">{j.company} · {j.period}</p>
+                  <ul class="steps__items">
+                    {j.items.map((item) => (
+                      <li>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              </li>
+            ))
+          }
+        </ol>
+        <p class="term-section__note">{EDUCATION.degree} — {EDUCATION.school} · {EDUCATION.period} · GPA {EDUCATION.gpa}</p>
+      </section>
+
+      <section class="term-section term-section--tight reveal" style="--i: 4" id="contact" aria-labelledby="contact-h">
+        <h2 id="contact-h"><span class="p">$</span> ./hire-me --now</h2>
+        <p class="term-lede">Embedded sensing, real-time video, edge AI, or the infrastructure underneath — one email starts it. Replies within 48 hours.</p>
+        <div class="term-actions">
+          <a class="tlink" href="mailto:{PROFILE.email}">Email me →</a>
+          <button class="chip" type="button" data-copy={PROFILE.email}>Copy email</button>
+          <a class="tlink" href="tel:+84797051900">Call {PROFILE.phone} →</a>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      document.querySelectorAll("[data-copy]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const value = btn.getAttribute("data-copy") || "";
+          const original = btn.textContent;
+          try {
+            await navigator.clipboard.writeText(value);
+            btn.textContent = "✓ Copied";
+          } catch {
+            btn.textContent = value;
+          }
+          setTimeout(() => {
+            btn.textContent = original;
+          }, 2500);
+        });
+      });
+    </script>
+  </body>
 </html>
