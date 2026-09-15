@@ -66,14 +66,15 @@ body.term {
 }
 
 /* Isolate terminal page from global.css (loaded via BaseHead on every page):
-   neutralize main / pre / code / table / img defaults so .term-* rules win. */
-body.term main {
-  width: auto;
-  max-width: none;
-  margin: 0 auto;
-  padding: 0;
+   neutralize main / pre / code / table / img defaults so .term-* rules win.
+   NOTE: selectors must not out-specify .term-wrap / .nav-term__line below. */
+body.term main.term-wrap {
+  width: 100%;
+  max-width: 80ch;
+  margin-inline: auto;
+  padding-block: 0;
 }
-body.term pre {
+body.term pre:not(.nav-term__line) {
   padding: 0;
   margin: 0;
   background: transparent;
