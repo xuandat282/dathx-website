@@ -214,6 +214,26 @@ body.term :focus-visible {
   0%, 100% { text-shadow: 0 0 18px oklch(86% 0.225 155 / 0.25); }
   50% { text-shadow: 0 0 28px oklch(86% 0.225 155 / 0.45); }
 }
+
+/* Hero opening boot — load-driven stagger, terminal-style.
+   No-JS / reduced-motion keeps content visible (rules scoped to html.js). */
+html.js .hero-boot > * { opacity: 0; transform: translateY(10px); }
+html.js .hero-boot.booted > * { animation: hero-boot-in 480ms var(--ease-out) forwards; }
+html.js .hero-boot.booted > :nth-child(1) { animation-delay: 60ms; }
+html.js .hero-boot.booted > :nth-child(2) { animation-delay: 150ms; }
+html.js .hero-boot.booted > :nth-child(3) { animation-delay: 240ms; }
+html.js .hero-boot.booted > :nth-child(4) { animation-delay: 330ms; }
+html.js .hero-boot.booted > :nth-child(5) { animation-delay: 420ms; }
+@keyframes hero-boot-in { to { opacity: 1; transform: none; } }
+/* Headline gets a type-unmask wipe on top of the rise — graceful when type is the hero */
+html.js .hero-boot.booted > .term-hero__display {
+  animation: hero-boot-in 480ms var(--ease-out) forwards, hero-unmask 600ms var(--ease-out) forwards;
+  animation-delay: 60ms, 60ms;
+}
+@keyframes hero-unmask {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
 .term-lede { color: var(--color-muted); max-width: 65ch; margin: 0 0 var(--space-lg) 0; overflow-wrap: break-word; min-width: 0; }
 .term-meta {
   display: flex;
@@ -484,8 +504,16 @@ body.term::after {
   .term-hero__display .fn { animation: none; text-shadow: none; }
   .term-line { animation: none; }
   body.term::after { display: none; }
-  html.js .reveal { opacity: 1; transform: none; }
+    html.js .reveal { opacity: 1; transform: none; }
   html.js .reveal.in { animation: term-reveal-reduced 150ms linear forwards; }
+  html.js .hero-boot > *,
+  html.js .hero-boot.booted > *,
+  html.js .hero-boot.booted > .term-hero__display {
+    opacity: 1;
+    transform: none;
+    clip-path: none;
+    animation: none;
+  }
   html.js .reveal.in .play-block,
   html.js .reveal.in .steps > li,
   html.js .reveal.in .spec tbody tr { animation: none; }

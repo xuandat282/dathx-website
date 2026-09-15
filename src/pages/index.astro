@@ -24,7 +24,7 @@ import { SITE_TITLE, SITE_DESCRIPTION, PROFILE, SKILLS, PROJECTS, EXPERIENCE, ED
     </header>
 
     <main id="main" class="term-wrap">
-      <section class="term-hero reveal" style="--i: 0" aria-labelledby="hero-h">
+      <section class="term-hero hero-boot" aria-labelledby="hero-h">
         <h1 class="term-hero__display" id="hero-h">
           <span class="fn">whoami</span> — systems that see, listen, and report back.
         </h1>
@@ -122,6 +122,22 @@ import { SITE_TITLE, SITE_DESCRIPTION, PROFILE, SKILLS, PROJECTS, EXPERIENCE, ED
 
     <script>
       document.documentElement.classList.add("js");
+
+      // Hero opening boot: load-driven stagger (hero is always in viewport,
+      // so scroll-reveal would just add dead delay). Runs before the
+      // Terminal component's typed boot lines (400/800ms).
+      (() => {
+        const hero = document.querySelector(".term-hero");
+        if (!hero) return;
+        const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if (reduce) {
+          hero.classList.add("booted");
+          return;
+        }
+        requestAnimationFrame(() => {
+          setTimeout(() => hero.classList.add("booted"), 80);
+        });
+      })();
 
       // Scroll reveal: add .in when sections enter viewport (stagger via --i in CSS)
       (() => {
