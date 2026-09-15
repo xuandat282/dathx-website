@@ -45,13 +45,19 @@ import { SITE_TITLE } from '../consts';
 <style>
 	header {
 		margin: 0;
-		padding: 0 1em;
+		padding: 0 max(1em, env(safe-area-inset-left)) 0 max(1em, env(safe-area-inset-right));
 		background: white;
 		box-shadow: 0 2px 8px rgba(var(--black), 5%);
 	}
 	h2 {
 		margin: 0;
 		font-size: 1em;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		flex: none;
+		max-width: 40vw;
 	}
 
 	h2 a,
@@ -62,12 +68,27 @@ import { SITE_TITLE } from '../consts';
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
+		gap: 0.5em;
+		min-height: 64px;
+	}
+	.internal-links {
+		display: flex;
+		align-items: center;
+		overflow-x: auto;
+		scrollbar-width: none;
+		-webkit-overflow-scrolling: touch;
+		min-width: 0;
+	}
+	.internal-links::-webkit-scrollbar {
+		display: none;
 	}
 	nav a {
 		padding: 1em 0.5em;
 		color: var(--black);
 		border-bottom: 4px solid transparent;
 		text-decoration: none;
+		white-space: nowrap;
+		flex: none;
 	}
 	nav a.active {
 		text-decoration: none;
@@ -77,9 +98,21 @@ import { SITE_TITLE } from '../consts';
 	.social-links a {
 		display: flex;
 	}
+	.social-links {
+		flex: none;
+	}
 	@media (max-width: 720px) {
 		.social-links {
 			display: none;
+		}
+		h2 {
+			max-width: 32vw;
+			font-size: 0.9em;
+		}
+		nav a {
+			padding: 0.9em 0.5em;
+			min-height: 44px;
+			box-sizing: border-box;
 		}
 	}
 </style>

@@ -39,15 +39,19 @@ body {
 	background-size: 100% 600px;
 	word-wrap: break-word;
 	overflow-wrap: break-word;
+	overflow-x: clip;
 	color: rgb(var(--gray-dark));
 	font-size: 20px;
 	line-height: 1.7;
+	-webkit-text-size-adjust: 100%;
+	-webkit-tap-highlight-color: transparent;
 }
 main {
 	width: 720px;
 	max-width: calc(100% - 2em);
 	margin: auto;
 	padding: 3em 1em;
+	box-sizing: border-box;
 }
 h1,
 h2,
@@ -58,15 +62,17 @@ h6 {
 	margin: 0 0 0.5rem 0;
 	color: rgb(var(--black));
 	line-height: 1.2;
+	text-wrap: balance;
+	overflow-wrap: break-word;
 }
 h1 {
-	font-size: 3.052em;
+	font-size: clamp(2rem, 1.4rem + 4vw, 3.052em);
 }
 h2 {
-	font-size: 2.441em;
+	font-size: clamp(1.6rem, 1.25rem + 2.5vw, 2.441em);
 }
 h3 {
-	font-size: 1.953em;
+	font-size: clamp(1.35rem, 1.15rem + 1.5vw, 1.953em);
 }
 h4 {
 	font-size: 1.563em;
@@ -93,12 +99,18 @@ p {
 textarea {
 	width: 100%;
 	font-size: 16px;
+	box-sizing: border-box;
 }
 input {
 	font-size: 16px;
+	max-width: 100%;
 }
 table {
 	width: 100%;
+	border-collapse: collapse;
+	display: block;
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
 }
 img {
 	max-width: 100%;
@@ -109,10 +121,15 @@ code {
 	padding: 2px 5px;
 	background-color: rgb(var(--gray-light));
 	border-radius: 2px;
+	overflow-wrap: break-word;
 }
 pre {
 	padding: 1.5em;
 	border-radius: 8px;
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+	max-width: 100%;
+	box-sizing: border-box;
 }
 pre > code {
 	all: unset;
@@ -121,7 +138,8 @@ blockquote {
 	border-left: 4px solid var(--accent);
 	padding: 0 0 0 20px;
 	margin: 0px;
-	font-size: 1.333em;
+	font-size: clamp(1.1em, 1em + 1vw, 1.333em);
+	overflow-wrap: break-word;
 }
 hr {
 	border: none;
@@ -133,6 +151,14 @@ hr {
 	}
 	main {
 		padding: 1em;
+		max-width: calc(100% - 2em);
+	}
+	pre {
+		padding: 1em;
+		font-size: 0.85em;
+	}
+	blockquote {
+		padding-left: 16px;
 	}
 }
 

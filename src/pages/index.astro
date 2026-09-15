@@ -31,12 +31,12 @@ import { SITE_TITLE, SITE_DESCRIPTION, PROFILE, SKILLS, PROJECTS, EXPERIENCE, ED
         <p class="term-lede">{PROFILE.summary}</p>
         <ul class="term-meta">
           <li>{PROFILE.location}</li>
-          <li><a href="mailto:{PROFILE.email}">{PROFILE.email}</a></li>
-          <li><a href="tel:+84797051900">{PROFILE.phone}</a></li>
+          <li><a href={`mailto:${PROFILE.email}`}>{PROFILE.email}</a></li>
+          <li><a href={`tel:${PROFILE.phone.replace(/\s/g, "")}`}>{PROFILE.phone}</a></li>
         </ul>
         <Terminal />
         <div class="term-actions">
-          <a class="tlink" href="mailto:{PROFILE.email}">Email me →</a>
+          <a class="tlink" href={`mailto:${PROFILE.email}`}>Email me →</a>
           <button class="chip" type="button" data-copy={PROFILE.email}>Copy email</button>
           <a class="tlink" href="#work">Read the work →</a>
         </div>
@@ -113,9 +113,9 @@ import { SITE_TITLE, SITE_DESCRIPTION, PROFILE, SKILLS, PROJECTS, EXPERIENCE, ED
         <h2 id="contact-h"><span class="p">$</span> ./hire-me --now</h2>
         <p class="term-lede">Embedded sensing, real-time video, edge AI, or the infrastructure underneath — one email starts it. Replies within 48 hours.</p>
         <div class="term-actions">
-          <a class="tlink" href="mailto:{PROFILE.email}">Email me →</a>
+          <a class="tlink" href={`mailto:${PROFILE.email}`}>Email me →</a>
           <button class="chip" type="button" data-copy={PROFILE.email}>Copy email</button>
-          <a class="tlink" href="tel:+84797051900">Call {PROFILE.phone} →</a>
+          <a class="tlink" href={`tel:${PROFILE.phone.replace(/\s/g, "")}`}>Call {PROFILE.phone} →</a>
         </div>
       </section>
     </main>
