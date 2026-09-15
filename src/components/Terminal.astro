@@ -130,6 +130,42 @@ const skillsJson = JSON.stringify(SKILLS.map((s) => s.category));
   if (reduceMotion) {
     boot.forEach((c) => printLine(null, '<span class="p">&gt;</span> ' + esc(c) + "<br>" + COMMANDS[c]()));
   } else {
-    boot.forEach((c, i) => setTimeout(() => printLine(null, '<span class="p">&gt;</span> ' + esc(c) + "<br>" + COMMANDS[c]()), 350 * (i + 1)));
+    // Hacker touch: type the boot commands char-by-char, then print output
+    function typeBoot(cmd, delay) {
+      setTimeout(() => {
+        const p = document.createElement("p");
+        p.className = "term-line term-out";
+        const echo = document.createElement("span");
+        echo.innerHTML = '<span class="p">&gt;</span> ';
+        const typed = document.createElement("span");
+        echo.appendChild(typed);
+        p.appendChild(echo);
+        log.appendChild(p);
+        let i = 0;
+        const tick = () => {
+          typed.textContent = cmd.slice(0, ++i);
+          if (i < cmd.length) {
+            setTimeout(tick, 45 + Math.random() * 60);
+          } else {
+            const out = document.createElement("span");
+            out.innerHTML = "<br>" + COMMANDS[cmd]();
+            p.appendChild(out);
+          }
+        };
+        tick();
+      }, delay);
+    }
+    boot.forEach((c, i) => typeBoot(c, 400 * (i + 1)));
+  }
+
+  // Rotating placeholder hints — pauses on focus, off when reduced motion
+  if (!reduceMotion) {
+    const hints = ["type `help`", "try `whoami`", "try `projects`", "try `skills`", "try `contact`"];
+    let hi = 0;
+    setInterval(() => {
+      if (document.activeElement === input || input.value) return;
+      hi = (hi + 1) % hints.length;
+      input.setAttribute("placeholder", hints[hi]);
+    }, 3200);
   }
 </script>

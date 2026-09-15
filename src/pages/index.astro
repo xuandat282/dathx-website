@@ -121,6 +121,31 @@ import { SITE_TITLE, SITE_DESCRIPTION, PROFILE, SKILLS, PROJECTS, EXPERIENCE, ED
     </main>
 
     <script>
+      document.documentElement.classList.add("js");
+
+      // Scroll reveal: add .in when sections enter viewport (stagger via --i in CSS)
+      (() => {
+        const els = document.querySelectorAll(".reveal");
+        if (!els.length) return;
+        const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if (reduce || !("IntersectionObserver" in window)) {
+          els.forEach((el) => el.classList.add("in"));
+          return;
+        }
+        const io = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((e) => {
+              if (e.isIntersecting) {
+                e.target.classList.add("in");
+                io.unobserve(e.target);
+              }
+            });
+          },
+          { threshold: 0.12, rootMargin: "0px 0px -8% 0px" },
+        );
+        els.forEach((el) => io.observe(el));
+      })();
+
       document.querySelectorAll("[data-copy]").forEach((btn) => {
         btn.addEventListener("click", async () => {
           const value = btn.getAttribute("data-copy") || "";
