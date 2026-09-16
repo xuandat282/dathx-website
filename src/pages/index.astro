@@ -1,8 +1,58 @@
 ---
 import BaseHead from "../components/BaseHead.astro";
 import Terminal from "../components/Terminal.astro";
+import Footer from "../components/Footer.astro";
 import "../styles/terminal.css";
-import { SITE_TITLE, SITE_DESCRIPTION, PROFILE, SKILLS, PROJECTS, EXPERIENCE, EDUCATION } from "../consts";
+import { getCollection } from "astro:content";
+import { SITE_TITLE, SITE_DESCRIPTION, PROFILE, EDUCATION } from "../consts";
+
+const projectEntries = (await getCollection("projects")).sort((a, b) => a.data.order - b.data.order);
+const skillEntries = (await getCollection("skills")).sort((a, b) => a.data.order - b.data.order);
+const experienceEntries = (await getCollection("experience")).sort((a, b) => a.data.order - b.data.order);
+
+const PROJECTS = projectEntries.map((e) => ({ id: e.id, ...e.data }));
+const SKILLS = skillEntries.map((e) => e.data);
+const EXPERIENCE = experienceEntries.map((e) => e.data);
+
+const terminalProjects = PROJECTS.map((p) => ({
+	id: p.id,
+	title: p.title,
+	company: p.company,
+	metrics: p.metrics ?? "",
+}));
+const skillCats = SKILLS.map((s) => s.category);
+
+const siteUrl = Astro.site?.toString() ?? "https://dathxspace.cloud/";
+const personJsonLd = {
+	"@context": "https://schema.org",
+	"@type": "Person",
+	name: PROFILE.name,
+	jobTitle: PROFILE.role,
+	address: { "@type": "PostalAddress", addressLocality: PROFILE.location },
+	email: `mailto:${PROFILE.email}`,
+	telephone: PROFILE.phone,
+	url: siteUrl,
+	knowsAbout: SKILLS.map((s) => s.category),
+};
+// ItemList of projects — gives each shipped system its own entity for SEO.
+const projectsJsonLd = {
+	"@context": "https://schema.org",
+	"@type": "ItemList",
+	name: "Projects by Dat Xuan Huynh",
+	numberOfItems: PROJECTS.length,
+	itemListElement: PROJECTS.map((p, i) => ({
+		"@type": "ListItem",
+		position: i + 1,
+		url: `${siteUrl}#${p.id}`,
+		item: {
+			"@type": "SoftwareSourceCode",
+			name: p.title,
+			description: p.blurb,
+			programmingLanguage: p.stack,
+			...(p.metrics ? { comment: p.metrics } : {}),
+		},
+	})),
+};
 ---
 
 <!doctype html>
@@ -11,23 +61,16 @@ import { SITE_TITLE, SITE_DESCRIPTION, PROFILE, SKILLS, PROJECTS, EXPERIENCE, ED
     <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} image="/og-image.png" imageWidth={1200} imageHeight={630} />
     <link rel="preload" href="/fonts/jetbrains-mono-400.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/jetbrains-mono-700.woff2" as="font" type="font/woff2" crossorigin />
-    <script type="application/ld+json" set:html={JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": "Person",
-      name: PROFILE.name,
-      jobTitle: PROFILE.role,
-      address: { "@type": "PostalAddress", addressLocality: PROFILE.location },
-      email: `mailto:${PROFILE.email}`,
-      telephone: PROFILE.phone,
-      url: Astro.site?.toString(),
-      knowsAbout: SKILLS.map((s) => s.category),
-    })} />
+    <link rel="alternate" type="application/rss+xml" title={`${PROFILE.name} — projects feed`} href={new URL("rss.xml", Astro.site)} />
+    <script type="application/ld+json" set:html={JSON.stringify(personJsonLd)} />
+    <script type="application/ld+json" set:html={JSON.stringify(projectsJsonLd)} />
   </head>
   <body class="term">
     <a class="term-skip" href="#main">Skip to content</a>
+    <a class="term-skip" href="#term-input">Skip to terminal input</a>
 
     <header class="nav-term">
-      <nav class="nav-term__line" aria-label="Sections"><span class="prompt">&gt;</span> dathx <a href="#work">--projects</a> <a href="#skills">--skills</a> <a href="#experience">--experience</a> <a href="#contact">--contact</a><span class="nav-term__caret" aria-hidden="true">▮</span></nav>
+      <nav class="nav-term__line" aria-label="Sections"><span class="prompt">&gt;</span> dathx <a href="#work" data-spy="work">--projects</a> <a href="#skills" data-spy="skills">--skills</a> <a href="#experience" data-spy="experience">--experience</a> <a href="#contact" data-spy="contact">--contact</a><span class="nav-term__caret" aria-hidden="true">▮</span></nav>
     </header>
 
     <main id="main" class="term-wrap">
@@ -41,7 +84,7 @@ import { SITE_TITLE, SITE_DESCRIPTION, PROFILE, SKILLS, PROJECTS, EXPERIENCE, ED
           <li><a href={`mailto:${PROFILE.email}`}>{PROFILE.email}</a></li>
           <li><a href={`tel:${PROFILE.phone.replace(/\s/g, "")}`}>{PROFILE.phone}</a></li>
         </ul>
-        <Terminal />
+        <Terminal projects={terminalProjects} skillCats={skillCats} expCount={EXPERIENCE.length} />
         <div class="term-actions">
           <a class="tlink" href={`mailto:${PROFILE.email}`}>Email me →</a>
           <button class="chip" type="button" data-copy={PROFILE.email}>Copy email</button>
@@ -55,7 +98,7 @@ import { SITE_TITLE, SITE_DESCRIPTION, PROFILE, SKILLS, PROJECTS, EXPERIENCE, ED
         <div class="play-grid">
           {
             PROJECTS.map((p) => (
-              <article class="play-block">
+              <article class="play-block" id={p.id}>
                 <div class="play-block__head">
                   <h3>{p.title}</h3>
                 </div>
@@ -63,11 +106,11 @@ import { SITE_TITLE, SITE_DESCRIPTION, PROFILE, SKILLS, PROJECTS, EXPERIENCE, ED
                 {p.metrics && <p class="play-block__metrics">{p.metrics}</p>}
                 <p class="play-block__blurb">{p.blurb}</p>
                 <ul class="play-block__stack">
-                  {p.stack.split(", ").map((s) => (
+                  {p.stack.map((s) => (
                     <li>{s}</li>
                   ))}
                 </ul>
-                <button class="chip" type="button" data-copy={p.stack}>Copy stack</button>
+                <button class="chip" type="button" data-copy={p.stack.join(", ")}>Copy stack</button>
               </article>
             ))
           }
@@ -84,7 +127,7 @@ import { SITE_TITLE, SITE_DESCRIPTION, PROFILE, SKILLS, PROJECTS, EXPERIENCE, ED
               SKILLS.map((s) => (
                 <tr>
                   <th scope="row">{s.category}</th>
-                  <td>{s.items}</td>
+                  <td>{s.items.join(", ")}</td>
                 </tr>
               ))
             }
@@ -126,6 +169,10 @@ import { SITE_TITLE, SITE_DESCRIPTION, PROFILE, SKILLS, PROJECTS, EXPERIENCE, ED
         </div>
       </section>
     </main>
+
+    <Footer />
+
+    <a href="#main" class="to-top" id="to-top" aria-label="Back to top">↑</a>
 
     <script>
       document.documentElement.classList.add("js");
@@ -169,6 +216,41 @@ import { SITE_TITLE, SITE_DESCRIPTION, PROFILE, SKILLS, PROJECTS, EXPERIENCE, ED
           { threshold: 0.08, rootMargin: "0px 0px -5% 0px" },
         );
         els.forEach((el) => io.observe(el));
+      })();
+
+      // Scroll-spy: highlight the nav link for the section in view
+      (() => {
+        const links = document.querySelectorAll(".nav-term__line a[data-spy]");
+        if (!links.length || !("IntersectionObserver" in window)) return;
+        const byId = new Map();
+        links.forEach((a) => byId.set(a.getAttribute("data-spy"), a));
+        const spy = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((e) => {
+              if (e.isIntersecting) {
+                links.forEach((a) => a.removeAttribute("aria-current"));
+                const link = byId.get(e.target.id);
+                if (link) link.setAttribute("aria-current", "true");
+              }
+            });
+          },
+          { rootMargin: "-40% 0px -55% 0px" },
+        );
+        ["work", "skills", "experience", "contact"].forEach((id) => {
+          const s = document.getElementById(id);
+          if (s) spy.observe(s);
+        });
+      })();
+
+      // Back-to-top: reveal after scrolling past the hero
+      (() => {
+        const btn = document.getElementById("to-top");
+        if (!btn) return;
+        const onScroll = () => {
+          btn.classList.toggle("show", window.scrollY > window.innerHeight * 0.8);
+        };
+        window.addEventListener("scroll", onScroll, { passive: true });
+        onScroll();
       })();
 
       document.querySelectorAll("[data-copy]").forEach((btn) => {

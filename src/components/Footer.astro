@@ -1,0 +1,17 @@
+---
+import { PROFILE } from "../consts";
+
+// Evaluated at build time (prerender) — gives the Ft4 "build hash+date" line.
+const buildDate = new Date().toISOString().slice(0, 10);
+const year = new Date().getUTCFullYear();
+---
+
+<footer class="term-foot" aria-label="Site footer">
+  <p class="term-foot__line"><span class="p">$</span> uptime --site <span class="dim">built {buildDate} · static edge · {PROFILE.location}</span></p>
+  <ul class="term-foot__links">
+    <li>© {year} {PROFILE.name}</li>
+    <li><a href="/sitemap-index.xml">sitemap</a></li>
+    <li><a href="/rss.xml">rss</a></li>
+    <li><a href="#main">↑ top</a></li>
+  </ul>
+</footer>

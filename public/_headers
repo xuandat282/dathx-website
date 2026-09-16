@@ -1,15 +1,29 @@
-# Security headers (all routes) + long-lived cache for hashed/static assets.
+# Security headers (all routes) + cache policy for static/SEO assets.
+# NOTE: no Content-Security-Policy here — the site uses inline scripts
+# (hero boot, terminal, reveal). Adding a CSP without hashes/nonces
+# would break interactivity. Revisit with `csp-hashes` if needed.
 /*
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+  Cross-Origin-Opener-Policy: same-origin
 
 /fonts/*
   Cache-Control: public, max-age=31536000, immutable
 
 /_astro/*
   Cache-Control: public, max-age=31536000, immutable
+
+/sitemap-index.xml
+  Cache-Control: public, max-age=3600
+
+/sitemap-*.xml
+  Cache-Control: public, max-age=3600
+
+/rss.xml
+  Cache-Control: public, max-age=3600
 
 /*.png
   Cache-Control: public, max-age=604800

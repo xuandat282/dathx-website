@@ -199,6 +199,11 @@ body.term :focus-visible {
   flex: none;
 }
 .nav-term__line a:hover { text-decoration-color: var(--color-accent); color: var(--color-accent); }
+.nav-term__line a[aria-current="true"] {
+  color: var(--color-accent);
+  text-decoration-color: var(--color-accent);
+  text-decoration-thickness: 2px;
+}
 .nav-term__caret {
   display: inline-block;
   width: 1ch;
@@ -227,10 +232,15 @@ body.term :focus-visible {
   margin: 0 0 var(--space-md) 0;
   max-width: 22ch;
 }
-.term-hero__display .fn { color: var(--color-accent); font-weight: 700; text-shadow: 0 0 18px oklch(86% 0.225 155 / 0.22); animation: term-fn-glow 6s ease-in-out infinite; }
-@keyframes term-fn-glow {
-  0%, 100% { text-shadow: 0 0 16px oklch(86% 0.225 155 / 0.18); }
-  50% { text-shadow: 0 0 22px oklch(86% 0.225 155 / 0.3); }
+.term-hero__display .fn {
+  color: var(--color-accent);
+  font-weight: 700;
+  text-shadow: 0 0 16px oklch(86% 0.225 155 / 0.18);
+  transition: text-shadow var(--dur-short) var(--ease-out);
+}
+/* Glow on hover only — the infinite pulse repainted text every frame (GPU cost on low-end). */
+@media (hover: hover) {
+  .term-hero__display:hover .fn { text-shadow: 0 0 22px oklch(86% 0.225 155 / 0.35); }
 }
 
 /* Hero opening boot — load-driven stagger, terminal-style.
@@ -327,6 +337,27 @@ html.js .hero-boot.booted > :nth-child(5) { animation-delay: 700ms; }
   padding: 0 var(--space-xs);
   font-family: inherit;
 }
+/* Click-to-run hint chips: reset button, keep kbd look, glow on hover */
+.term-hint__btn {
+  background: transparent;
+  border: 0;
+  border-radius: 4px;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  min-height: 44px;
+  min-width: 44px;
+}
+.term-hint__btn kbd { transition: border-color var(--dur-short) var(--ease-out), color var(--dur-short) var(--ease-out), box-shadow var(--dur-short) var(--ease-out); }
+@media (hover: hover) {
+  .term-hint__btn:hover kbd {
+    border-color: var(--color-accent-dim);
+    color: var(--color-accent);
+    box-shadow: 0 0 12px oklch(86% 0.225 155 / 0.2);
+  }
+}
 
 /* Sections: stacked single column, uneven rhythm */
 .term-section { padding-block: var(--space-xl); scroll-margin-top: 3.5rem; min-width: 0; }
@@ -397,6 +428,13 @@ html.js .hero-boot.booted > :nth-child(5) { animation-delay: 700ms; }
   }
 }
 .chip:active { transform: translateY(1px); }
+/* Stronger keyboard focus: 2px accent outline + glow (was easy to miss on dark bg) */
+.chip:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 16px oklch(86% 0.225 155 / 0.35);
+}
 .chip:disabled, .term-input:disabled {
   opacity: 0.55;
   cursor: not-allowed;
@@ -445,6 +483,57 @@ html.js .hero-boot.booted > :nth-child(5) { animation-delay: 700ms; }
 .steps__items { margin: 0; padding: 0; list-style: none; color: var(--color-muted); }
 .steps__items li { display: block; border: 0; padding: 0; }
 .steps__items li::before { content: "$ "; color: var(--color-rule); }
+
+/* Ft4 · log-style footer: rule + mono line, build stamp + sitemap/rss/top */
+.term-foot {
+  max-width: 80ch;
+  margin-inline: auto;
+  padding-inline: max(clamp(1rem, 4vw, 1.5rem), env(safe-area-inset-left));
+  padding-right: max(clamp(1rem, 4vw, 1.5rem), env(safe-area-inset-right));
+  padding-block: var(--space-lg) var(--space-2xl);
+  border-top: 1px solid var(--color-rule);
+  box-sizing: border-box;
+}
+.term-foot__line { font-size: var(--text-sm); color: var(--color-ink); margin: 0 0 var(--space-sm) 0; overflow-wrap: anywhere; }
+.term-foot__line .p { color: var(--color-accent); }
+.term-foot__line .dim { color: var(--color-neutral); }
+.term-foot__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-lg);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-sm);
+  color: var(--color-neutral);
+}
+
+/* Back-to-top: fixed terminal chip, hidden until scrolled past hero */
+.to-top {
+  position: fixed;
+  right: max(clamp(1rem, 4vw, 1.5rem), env(safe-area-inset-right));
+  bottom: max(clamp(1rem, 4vw, 1.5rem), env(safe-area-inset-bottom));
+  z-index: var(--z-sticky);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--color-rule);
+  border-radius: 4px;
+  background: var(--color-paper-2);
+  color: var(--color-accent);
+  text-decoration: none;
+  font-size: var(--text-md);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+  transition: opacity var(--dur-short) var(--ease-out), transform var(--dur-short) var(--ease-out), border-color var(--dur-short) var(--ease-out);
+}
+.to-top.show { opacity: 1; pointer-events: auto; transform: none; }
+@media (hover: hover) {
+  .to-top:hover { border-color: var(--color-accent-dim); box-shadow: 0 0 16px oklch(86% 0.225 155 / 0.25); }
+}
 
 /* Scroll reveal — driven by IntersectionObserver (html.js). No-JS keeps content visible. */
 .reveal { opacity: 1; transform: none; }
@@ -513,6 +602,32 @@ body.term::after {
 @media (max-width: 24rem) {
   .term-hero__display { font-size: 1.6rem; }
   .play-block__head h3 { font-size: var(--text-base); }
+}
+
+@media (prefers-contrast: more) {
+  /* Scanlines wash out text at high contrast — drop the overlay */
+  body.term::after { display: none; }
+  .term-hero__display .fn { text-shadow: none; }
+}
+
+@media print {
+  /* Print = CV mode: light paper, linear content, no chrome */
+  :root { --color-paper: #fff; }
+  body.term { background: #fff; color: #000; font-size: 11pt; line-height: 1.5; }
+  body.term::after { display: none; }
+  body.term a { color: #000; }
+  .nav-term, .to-top, .term-frame, .term-actions, .term-skip, .nav-term__caret { display: none !important; }
+  .term-wrap, .term-foot { max-width: 100%; padding-inline: 0; }
+  .term-hero, .term-section, .term-section--tight { padding-block: 1rem; }
+  .term-lede, .term-meta, .spec td, .steps__items, .play-block__blurb { color: #222; }
+  .term-foot { padding-block: 1rem; border-top: 2px solid #000; }
+  .term-foot__line .dim, .term-foot__links, .term-section__note,
+  .play-block__id, .play-block__metrics, .spec caption, .steps__co { color: #444; }
+  .play-block__stack li { border-color: #999; color: #222; }
+  /* JS-gated states must not hide content on paper */
+  html.js .reveal, html.js .reveal.in,
+  html.js .hero-boot > *, html.js .hero-boot.booted > * { opacity: 1 !important; transform: none !important; animation: none !important; }
+  .term-hero__display .fn, .term-section h2 .p, .steps__n, .spec th { color: #000; text-shadow: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

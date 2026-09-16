@@ -1,0 +1,28 @@
+---
+import BaseHead from "../components/BaseHead.astro";
+import Footer from "../components/Footer.astro";
+import "../styles/terminal.css";
+import { SITE_TITLE, SITE_DESCRIPTION } from "../consts";
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <BaseHead title={`404 — command not found · ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
+    <meta name="robots" content="noindex, follow" />
+  </head>
+  <body class="term">
+    <a class="term-skip" href="#main">Skip to content</a>
+    <main id="main" class="term-wrap term-hero">
+      <p class="term-section__note"><span class="p">&gt;</span> dathx --status</p>
+      <h1 class="term-hero__display"><span class="fn">404</span> — command not found.</h1>
+      <p class="term-lede">The route you typed doesn't exist. No logs were harmed. Head back to the main shell:</p>
+      <div class="term-actions">
+        <a class="tlink" href="/">cd ~ →</a>
+        <a class="tlink" href="/#work">cat projects/*.md →</a>
+        <a class="tlink" href="/#contact">./hire-me --now →</a>
+      </div>
+    </main>
+    <Footer />
+  </body>
+</html>

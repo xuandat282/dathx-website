@@ -1,10 +1,23 @@
 ---
-import { PROFILE, PROJECTS, SKILLS, EXPERIENCE } from "../consts";
+import { PROFILE } from "../consts";
 
-const projectsJson = JSON.stringify(
-  PROJECTS.map((p) => ({ id: p.id, title: p.title, company: p.company, metrics: p.metrics ?? "" })),
-);
-const skillsJson = JSON.stringify(SKILLS.map((s) => s.category));
+interface TerminalProject {
+	id: string;
+	title: string;
+	company: string;
+	metrics: string;
+}
+
+interface Props {
+	projects: TerminalProject[];
+	skillCats: string[];
+	expCount: number;
+}
+
+const { projects, skillCats, expCount } = Astro.props;
+
+const projectsJson = JSON.stringify(projects);
+const skillsJson = JSON.stringify(skillCats);
 ---
 
 <figure class="term-frame" aria-label="Interactive terminal">
@@ -12,7 +25,7 @@ const skillsJson = JSON.stringify(SKILLS.map((s) => s.category));
     <span>dathx@edge: ~</span><span>utf-8 · bash</span>
   </div>
   <div class="term-frame__body">
-    <div id="term-log" aria-live="polite" aria-label="Terminal output"></div>
+    <div id="term-log" role="log" aria-live="polite" aria-label="Terminal output"></div>
     <form id="term-form" class="term-inputrow" autocomplete="off">
       <span class="p" aria-hidden="true">&gt;</span>
       <label class="visually-hidden" for="term-input">Terminal command input</label>
@@ -27,11 +40,11 @@ const skillsJson = JSON.stringify(SKILLS.map((s) => s.category));
         aria-describedby="term-hint"
       />
     </form>
-    <p class="term-hint" id="term-hint">commands: <kbd>help</kbd> <kbd>whoami</kbd> <kbd>projects</kbd> <kbd>skills</kbd> <kbd>contact</kbd> <kbd>clear</kbd> · ↑/↓ history</p>
+    <p class="term-hint" id="term-hint">commands: <button type="button" class="term-hint__btn" data-run="help"><kbd>help</kbd></button> <button type="button" class="term-hint__btn" data-run="whoami"><kbd>whoami</kbd></button> <button type="button" class="term-hint__btn" data-run="projects"><kbd>projects</kbd></button> <button type="button" class="term-hint__btn" data-run="skills"><kbd>skills</kbd></button> <button type="button" class="term-hint__btn" data-run="contact"><kbd>contact</kbd></button> <button type="button" class="term-hint__btn" data-run="clear"><kbd>clear</kbd></button> · ↑/↓ history · tab complete</p>
   </div>
 </figure>
 
-<script define:vars={{ projectsJson, skillsJson, profileName: PROFILE.name, profileRole: PROFILE.role, profileEmail: PROFILE.email, profilePhone: PROFILE.phone, expCount: EXPERIENCE.length, projectCount: PROJECTS.length, skillCount: SKILLS.length }}>
+<script define:vars={{ projectsJson, skillsJson, profileName: PROFILE.name, profileRole: PROFILE.role, profileEmail: PROFILE.email, profilePhone: PROFILE.phone, expCount, projectCount: projects.length, skillCount: skillCats.length }}>
   const log = document.getElementById("term-log");
   const form = document.getElementById("term-form");
   const input = document.getElementById("term-input");
@@ -70,7 +83,7 @@ const skillsJson = JSON.stringify(SKILLS.map((s) => s.category));
     whoami: () => esc(profileName) + '<br><span class="dim">' + esc(profileRole) + "</span>",
     projects: () => projects.map((p) => esc(p.id) + " · " + esc(p.title)).join("<br>"),
     skills: () => skillCats.map((c) => esc(c)).join("<br>"),
-    experience: () => "4 roles · 2022 → present · see #experience below",
+    experience: () => expCount + " roles · 2022 → present · see #experience below",
     contact: () => esc(profileEmail) + " · " + esc(profilePhone),
     hire: () => 'good call. email <span class="dim">' + esc(profileEmail) + "</span> — replies within 48h.",
     sudo: () => "permission denied: you are a guest, not root.",
@@ -107,7 +120,40 @@ const skillsJson = JSON.stringify(SKILLS.map((s) => s.category));
     input.value = "";
     input.focus();
   });
+  // Click-to-run: hint chips execute the command for discoverability
+  document.querySelectorAll("[data-run]").forEach((b) => {
+    b.addEventListener("click", () => {
+      run(b.getAttribute("data-run") || "");
+      input.focus();
+    });
+  });
   input.addEventListener("keydown", (e) => {
+    if (e.key === "Tab") {
+      e.preventDefault();
+      const val = input.value;
+      const parts = val.split(/\s+/);
+      // `projects <partial-id>` → complete against project ids
+      if (parts.length > 1 && parts[0].toLowerCase() === "projects") {
+        const frag = parts.slice(1).join("-").toLowerCase();
+        const matches = projects.map((p) => p.id).filter((id) => id.startsWith(frag));
+        if (matches.length === 1) {
+          input.value = "projects " + matches[0];
+        } else if (matches.length > 1) {
+          printLine(val, matches.map((m) => esc(m)).join("<br>"), "", false);
+        }
+        return;
+      }
+      const frag = val.trim().toLowerCase();
+      if (!frag) return;
+      const cmds = Object.keys(COMMANDS).concat("clear");
+      const matches = cmds.filter((c) => c.startsWith(frag));
+      if (matches.length === 1) {
+        input.value = matches[0] + " ";
+      } else if (matches.length > 1) {
+        printLine(val, matches.map((m) => esc(m)).join(" · "), "", false);
+      }
+      return;
+    }
     if (e.key === "ArrowUp") {
       e.preventDefault();
       if (hIndex < history.length - 1) {
