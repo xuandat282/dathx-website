@@ -8,19 +8,26 @@ import { SITE_TITLE, SITE_DESCRIPTION, PROFILE, SKILLS, PROJECTS, EXPERIENCE, ED
 <!doctype html>
 <html lang="en">
   <head>
-    <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} image="/og-image.png" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap"
-      rel="stylesheet"
-    />
+    <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} image="/og-image.png" imageWidth={1200} imageHeight={630} />
+    <link rel="preload" href="/fonts/jetbrains-mono-400.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/jetbrains-mono-700.woff2" as="font" type="font/woff2" crossorigin />
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Person",
+      name: PROFILE.name,
+      jobTitle: PROFILE.role,
+      address: { "@type": "PostalAddress", addressLocality: PROFILE.location },
+      email: `mailto:${PROFILE.email}`,
+      telephone: PROFILE.phone,
+      url: Astro.site?.toString(),
+      knowsAbout: SKILLS.map((s) => s.category),
+    })} />
   </head>
   <body class="term">
     <a class="term-skip" href="#main">Skip to content</a>
 
     <header class="nav-term">
-      <pre class="nav-term__line"><span class="prompt">&gt;</span> dathx <a href="#work">--projects</a> <a href="#skills">--skills</a> <a href="#experience">--experience</a> <a href="#contact">--contact</a><span class="nav-term__caret" aria-hidden="true">▮</span></pre>
+      <nav class="nav-term__line" aria-label="Sections"><span class="prompt">&gt;</span> dathx <a href="#work">--projects</a> <a href="#skills">--skills</a> <a href="#experience">--experience</a> <a href="#contact">--contact</a><span class="nav-term__caret" aria-hidden="true">▮</span></nav>
     </header>
 
     <main id="main" class="term-wrap">

@@ -5,9 +5,26 @@
 /* N8 knobs: prompt=`>`, cursor=in-line at end, width=~80ch · Ft4 knobs: family=monospace, layout=log-style, includes=build hash+date */
 /* Single-font note: monospace-everywhere is the intentional terminal aesthetic (typography.md exception) */
 
+/* Self-hosted JetBrains Mono (latin + latin-ext + vietnamese subset, woff2).
+   Replaces the Google Fonts stylesheet: zero third-party connections,
+   zero render-blocking CSS on first paint. */
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("/fonts/jetbrains-mono-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("/fonts/jetbrains-mono-700.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
-  --color-paper: oklch(14% 0.012 155);
-  --color-paper-2: oklch(17.5% 0.013 155);
+  --color-paper: oklch(14% 0.012 155);  --color-paper-2: oklch(17.5% 0.013 155);
   --color-paper-3: oklch(21% 0.014 155);
   --color-rule: oklch(30% 0.012 155);
   --color-neutral: oklch(62% 0.02 155);
