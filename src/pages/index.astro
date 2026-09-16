@@ -124,8 +124,8 @@ import { SITE_TITLE, SITE_DESCRIPTION, PROFILE, SKILLS, PROJECTS, EXPERIENCE, ED
       document.documentElement.classList.add("js");
 
       // Hero opening boot: load-driven stagger (hero is always in viewport,
-      // so scroll-reveal would just add dead delay). Runs before the
-      // Terminal component's typed boot lines (400/800ms).
+      // so scroll-reveal would just add dead delay). Delayed slightly so the
+      // first frame settles before motion starts — avoids a rushed flash.
       (() => {
         const hero = document.querySelector(".term-hero");
         if (!hero) return;
@@ -135,7 +135,9 @@ import { SITE_TITLE, SITE_DESCRIPTION, PROFILE, SKILLS, PROJECTS, EXPERIENCE, ED
           return;
         }
         requestAnimationFrame(() => {
-          setTimeout(() => hero.classList.add("booted"), 80);
+          requestAnimationFrame(() => {
+            setTimeout(() => hero.classList.add("booted"), 150);
+          });
         });
       })();
 
@@ -157,7 +159,7 @@ import { SITE_TITLE, SITE_DESCRIPTION, PROFILE, SKILLS, PROJECTS, EXPERIENCE, ED
               }
             });
           },
-          { threshold: 0.12, rootMargin: "0px 0px -8% 0px" },
+          { threshold: 0.08, rootMargin: "0px 0px -5% 0px" },
         );
         els.forEach((el) => io.observe(el));
       })();

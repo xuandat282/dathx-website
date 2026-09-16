@@ -131,6 +131,7 @@ const skillsJson = JSON.stringify(SKILLS.map((s) => s.category));
     boot.forEach((c) => printLine(null, '<span class="p">&gt;</span> ' + esc(c) + "<br>" + COMMANDS[c]()));
   } else {
     // Hacker touch: type the boot commands char-by-char, then print output
+    // Slow, human-paced typing — fast typing reads as jitter, not smoothness.
     function typeBoot(cmd, delay) {
       setTimeout(() => {
         const p = document.createElement("p");
@@ -145,17 +146,20 @@ const skillsJson = JSON.stringify(SKILLS.map((s) => s.category));
         const tick = () => {
           typed.textContent = cmd.slice(0, ++i);
           if (i < cmd.length) {
-            setTimeout(tick, 45 + Math.random() * 60);
+            setTimeout(tick, 90 + Math.random() * 80);
           } else {
-            const out = document.createElement("span");
-            out.innerHTML = "<br>" + COMMANDS[cmd]();
-            p.appendChild(out);
+            // Small settle pause before output appears — feels deliberate, not rushed
+            setTimeout(() => {
+              const out = document.createElement("span");
+              out.innerHTML = "<br>" + COMMANDS[cmd]();
+              p.appendChild(out);
+            }, 220);
           }
         };
         tick();
       }, delay);
     }
-    boot.forEach((c, i) => typeBoot(c, 400 * (i + 1)));
+    boot.forEach((c, i) => typeBoot(c, 1100 + i * 1400));
   }
 
   // Rotating placeholder hints — pauses on focus, off when reduced motion

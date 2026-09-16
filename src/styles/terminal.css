@@ -41,11 +41,12 @@
   --space-3xl: 6rem;
   --space-4xl: 9rem;
 
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
-  --dur-micro: 120ms;
-  --dur-short: 220ms;
-  --dur-long: 420ms;
+  --dur-micro: 150ms;
+  --dur-short: 350ms;
+  --dur-long: 800ms;
+  --dur-hero: 950ms;
 
   --z-base: 1;
   --z-sticky: 200;
@@ -209,30 +210,26 @@ body.term :focus-visible {
   margin: 0 0 var(--space-md) 0;
   max-width: 22ch;
 }
-.term-hero__display .fn { color: var(--color-accent); font-weight: 700; text-shadow: 0 0 18px oklch(86% 0.225 155 / 0.25); animation: term-fn-glow 3.2s ease-in-out infinite; }
+.term-hero__display .fn { color: var(--color-accent); font-weight: 700; text-shadow: 0 0 18px oklch(86% 0.225 155 / 0.22); animation: term-fn-glow 6s ease-in-out infinite; }
 @keyframes term-fn-glow {
-  0%, 100% { text-shadow: 0 0 18px oklch(86% 0.225 155 / 0.25); }
-  50% { text-shadow: 0 0 28px oklch(86% 0.225 155 / 0.45); }
+  0%, 100% { text-shadow: 0 0 16px oklch(86% 0.225 155 / 0.18); }
+  50% { text-shadow: 0 0 22px oklch(86% 0.225 155 / 0.3); }
 }
 
 /* Hero opening boot — load-driven stagger, terminal-style.
-   No-JS / reduced-motion keeps content visible (rules scoped to html.js). */
-html.js .hero-boot > * { opacity: 0; transform: translateY(10px); }
-html.js .hero-boot.booted > * { animation: hero-boot-in 480ms var(--ease-out) forwards; }
-html.js .hero-boot.booted > :nth-child(1) { animation-delay: 60ms; }
-html.js .hero-boot.booted > :nth-child(2) { animation-delay: 150ms; }
-html.js .hero-boot.booted > :nth-child(3) { animation-delay: 240ms; }
-html.js .hero-boot.booted > :nth-child(4) { animation-delay: 330ms; }
-html.js .hero-boot.booted > :nth-child(5) { animation-delay: 420ms; }
-@keyframes hero-boot-in { to { opacity: 1; transform: none; } }
-/* Headline gets a type-unmask wipe on top of the rise — graceful when type is the hero */
-html.js .hero-boot.booted > .term-hero__display {
-  animation: hero-boot-in 480ms var(--ease-out) forwards, hero-unmask 600ms var(--ease-out) forwards;
-  animation-delay: 60ms, 60ms;
-}
-@keyframes hero-unmask {
-  from { clip-path: inset(0 100% 0 0); }
-  to { clip-path: inset(0 0 0 0); }
+   Slow + smooth: one rise animation only (no clip-path wipe — clip-path
+   repaints text every frame and reads as jank). No-JS / reduced-motion
+   keeps content visible (rules scoped to html.js). */
+html.js .hero-boot > * { opacity: 0; transform: translateY(16px); will-change: opacity, transform; }
+html.js .hero-boot.booted > * { animation: hero-boot-in var(--dur-hero) var(--ease-out) forwards; }
+html.js .hero-boot.booted > :nth-child(1) { animation-delay: 50ms; }
+html.js .hero-boot.booted > :nth-child(2) { animation-delay: 200ms; }
+html.js .hero-boot.booted > :nth-child(3) { animation-delay: 350ms; }
+html.js .hero-boot.booted > :nth-child(4) { animation-delay: 520ms; }
+html.js .hero-boot.booted > :nth-child(5) { animation-delay: 700ms; }
+@keyframes hero-boot-in {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: none; }
 }
 .term-lede { color: var(--color-muted); max-width: 65ch; margin: 0 0 var(--space-lg) 0; overflow-wrap: break-word; min-width: 0; }
 .term-meta {
@@ -283,7 +280,7 @@ html.js .hero-boot.booted > .term-hero__display {
 .term-frame:focus-within .term-frame__label { color: var(--color-accent-dim); }
 .term-line { margin: 0 0 var(--space-2xs) 0; overflow-wrap: anywhere; scroll-margin-top: var(--space-3xl); animation: term-line-in var(--dur-short) var(--ease-out) both; }
 @keyframes term-line-in {
-  from { opacity: 0; transform: translateY(4px); }
+  from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: none; }
 }
 .term-line .p { color: var(--color-accent); text-shadow: 0 0 10px oklch(86% 0.225 155 / 0.35); }
@@ -434,9 +431,12 @@ html.js .hero-boot.booted > .term-hero__display {
 
 /* Scroll reveal — driven by IntersectionObserver (html.js). No-JS keeps content visible. */
 .reveal { opacity: 1; transform: none; }
-html.js .reveal { opacity: 0; transform: translateY(10px); }
-html.js .reveal.in { animation: term-reveal var(--dur-long) var(--ease-out) forwards; animation-delay: calc(var(--i, 0) * 70ms); }
-@keyframes term-reveal { to { opacity: 1; transform: none; } }
+html.js .reveal { opacity: 0; transform: translateY(18px); will-change: opacity, transform; }
+html.js .reveal.in { animation: term-reveal var(--dur-long) var(--ease-out) forwards; animation-delay: calc(var(--i, 0) * 120ms); }
+@keyframes term-reveal {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: none; }
+}
 
 /* Stagger play cards + steps when their section reveals */
 html.js .reveal.in .play-block,
@@ -444,9 +444,9 @@ html.js .reveal.in .steps > li,
 html.js .reveal.in .spec tbody tr {
   animation: term-line-in var(--dur-long) var(--ease-out) both;
 }
-html.js .reveal.in .play-block:nth-child(2) { animation-delay: 90ms; }
-html.js .reveal.in .play-block:nth-child(3) { animation-delay: 180ms; }
-html.js .reveal.in .play-block:nth-child(n+4) { animation-delay: 270ms; }
+html.js .reveal.in .play-block:nth-child(2) { animation-delay: 140ms; }
+html.js .reveal.in .play-block:nth-child(3) { animation-delay: 280ms; }
+html.js .reveal.in .play-block:nth-child(n+4) { animation-delay: 420ms; }
 
 /* Hacker details: smooth anchor scroll, accent caret, nav prompt glow */
 html { scroll-behavior: smooth; }
