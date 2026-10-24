@@ -2,16 +2,16 @@
 import { PROFILE } from "../consts";
 
 interface TerminalProject {
-	id: string;
-	title: string;
-	company: string;
-	metrics: string;
+  id: string;
+  title: string;
+  company: string;
+  metrics: string;
 }
 
 interface Props {
-	projects: TerminalProject[];
-	skillCats: string[];
-	expCount: number;
+  projects: TerminalProject[];
+  skillCats: string[];
+  expCount: number;
 }
 
 const { projects, skillCats, expCount } = Astro.props;
@@ -22,13 +22,18 @@ const skillsJson = JSON.stringify(skillCats);
 
 <figure class="term-frame" aria-label="Interactive terminal">
   <div class="term-frame__label" aria-hidden="true">
-    <span>dathx@edge: ~</span><span>utf-8 · bash</span>
+    <span>dathx@edge: ~</span>
+    <span>utf-8 · bash</span>
   </div>
   <div class="term-frame__body">
     <div id="term-log" role="log" aria-live="polite" aria-label="Terminal output"></div>
     <form id="term-form" class="term-inputrow" autocomplete="off">
-      <span class="p" aria-hidden="true">&gt;</span>
-      <label class="visually-hidden" for="term-input">Terminal command input</label>
+      <span class="p" aria-hidden="true">
+        &gt;
+      </span>
+      <label class="visually-hidden" for="term-input">
+        Terminal command input
+      </label>
       <input
         id="term-input"
         class="term-input"
@@ -40,22 +45,68 @@ const skillsJson = JSON.stringify(skillCats);
         aria-describedby="term-hint"
       />
     </form>
-    <p class="term-hint" id="term-hint">commands: <button type="button" class="term-hint__btn" data-run="help"><kbd>help</kbd></button> <button type="button" class="term-hint__btn" data-run="whoami"><kbd>whoami</kbd></button> <button type="button" class="term-hint__btn" data-run="projects"><kbd>projects</kbd></button> <button type="button" class="term-hint__btn" data-run="skills"><kbd>skills</kbd></button> <button type="button" class="term-hint__btn" data-run="contact"><kbd>contact</kbd></button> <button type="button" class="term-hint__btn" data-run="clear"><kbd>clear</kbd></button> · ↑/↓ history · tab complete</p>
+    <p class="term-hint" id="term-hint">
+      commands:{" "}
+      <button type="button" class="term-hint__btn" data-run="help">
+        <kbd>help</kbd>
+      </button>{" "}
+      <button type="button" class="term-hint__btn" data-run="whoami">
+        <kbd>whoami</kbd>
+      </button>{" "}
+      <button type="button" class="term-hint__btn" data-run="projects">
+        <kbd>projects</kbd>
+      </button>{" "}
+      <button type="button" class="term-hint__btn" data-run="skills">
+        <kbd>skills</kbd>
+      </button>{" "}
+      <button type="button" class="term-hint__btn" data-run="theme">
+        <kbd>theme</kbd>
+      </button>{" "}
+      <button type="button" class="term-hint__btn" data-run="contact">
+        <kbd>contact</kbd>
+      </button>{" "}
+      <button type="button" class="term-hint__btn" data-run="clear">
+        <kbd>clear</kbd>
+      </button>{" "}
+      · ↑/↓ history · tab complete
+    </p>
   </div>
 </figure>
 
-<script define:vars={{ projectsJson, skillsJson, profileName: PROFILE.name, profileRole: PROFILE.role, profileEmail: PROFILE.email, profilePhone: PROFILE.phone, expCount, projectCount: projects.length, skillCount: skillCats.length }}>
+<script
+  type="module"
+  define:vars={{
+    projectsJson,
+    skillsJson,
+    profileName: PROFILE.name,
+    profileRole: PROFILE.role,
+    profileEmail: PROFILE.email,
+    profilePhone: PROFILE.phone,
+    expCount,
+  }}
+>
+  // Single source of truth lives in /public/scripts/terminal-cmd.mjs —
+  // the browser loads the same file the node --test suite covers.
+  import { runCommand, completeInput, esc } from "/scripts/terminal-cmd.mjs";
+
   const log = document.getElementById("term-log");
   const form = document.getElementById("term-form");
   const input = document.getElementById("term-input");
-  const projects = JSON.parse(projectsJson);
-  const skillCats = JSON.parse(skillsJson);
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const history = [];
   let hIndex = -1;
 
-  function esc(s) {
-    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  function ctx() {
+    return {
+      profileName,
+      profileRole,
+      profileEmail,
+      profilePhone,
+      projects: JSON.parse(projectsJson),
+      skillCats: JSON.parse(skillsJson),
+      expCount,
+      currentTheme: document.documentElement.getAttribute("data-theme") || "light",
+    };
   }
   function printLine(cmd, html, cls, scroll) {
     const p = document.createElement("p");
@@ -76,37 +127,19 @@ const skillsJson = JSON.stringify(skillCats);
     }
   }
 
-  const COMMANDS = {
-    help: () =>
-      "whoami — identity · projects — " + projectCount + " shipped systems · skills — " + skillCount + " groups · experience — " +
-      expCount + " roles · contact — email + phone · clear — wipe scrollback",
-    whoami: () => esc(profileName) + '<br><span class="dim">' + esc(profileRole) + "</span>",
-    projects: () => projects.map((p) => esc(p.id) + " · " + esc(p.title)).join("<br>"),
-    skills: () => skillCats.map((c) => esc(c)).join("<br>"),
-    experience: () => expCount + " roles · 2022 → present · see #experience below",
-    contact: () => esc(profileEmail) + " · " + esc(profilePhone),
-    hire: () => 'good call. email <span class="dim">' + esc(profileEmail) + "</span> — replies within 48h.",
-    sudo: () => "permission denied: you are a guest, not root.",
-  };
-
   function run(raw) {
-    const cmd = raw.trim().toLowerCase();
-    if (!cmd) return;
-    if (cmd === "clear") {
+    const res = runCommand(raw, ctx());
+    if (res.action === "ignore") return;
+    if (res.action === "clear") {
       log.innerHTML = "";
       return;
     }
-    const [base, ...args] = cmd.split(/\s+/);
-    if (base === "projects" && args.length > 0) {
-      const found = projects.find((p) => p.id === args.join("-"));
-      printLine(raw, found ? esc(found.title) + '<br><span class="dim">' + esc(found.company) + (found.metrics ? " · " + esc(found.metrics) : "") + "</span>" : "unknown project id. try `projects`.", found ? "" : "term-err", true);
-      return;
+    if (res.action === "apply-theme") {
+      /** @type {{ __setTheme?: (t: string) => void }} */
+      const win = window;
+      if (typeof win.__setTheme === "function") win.__setTheme(res.theme);
     }
-    if (COMMANDS[base]) {
-      printLine(raw, COMMANDS[base](), "", true);
-    } else {
-      printLine(raw, "command not found: " + esc(base) + '. try `help`.', "term-err", true);
-    }
+    printLine(raw, res.html, res.cls, true);
   }
 
   form.addEventListener("submit", (e) => {
@@ -120,6 +153,7 @@ const skillsJson = JSON.stringify(skillCats);
     input.value = "";
     input.focus();
   });
+
   // Click-to-run: hint chips execute the command for discoverability
   document.querySelectorAll("[data-run]").forEach((b) => {
     b.addEventListener("click", () => {
@@ -131,26 +165,11 @@ const skillsJson = JSON.stringify(skillCats);
     if (e.key === "Tab") {
       e.preventDefault();
       const val = input.value;
-      const parts = val.split(/\s+/);
-      // `projects <partial-id>` → complete against project ids
-      if (parts.length > 1 && parts[0].toLowerCase() === "projects") {
-        const frag = parts.slice(1).join("-").toLowerCase();
-        const matches = projects.map((p) => p.id).filter((id) => id.startsWith(frag));
-        if (matches.length === 1) {
-          input.value = "projects " + matches[0];
-        } else if (matches.length > 1) {
-          printLine(val, matches.map((m) => esc(m)).join("<br>"), "", false);
-        }
-        return;
-      }
-      const frag = val.trim().toLowerCase();
-      if (!frag) return;
-      const cmds = Object.keys(COMMANDS).concat("clear");
-      const matches = cmds.filter((c) => c.startsWith(frag));
-      if (matches.length === 1) {
-        input.value = matches[0] + " ";
-      } else if (matches.length > 1) {
-        printLine(val, matches.map((m) => esc(m)).join(" · "), "", false);
+      const res = completeInput(val, { projects: JSON.parse(projectsJson) });
+      if (res.kind === "completed") {
+        input.value = res.value;
+      } else if (res.kind === "suggest") {
+        printLine(val, res.items.map((m) => esc(m)).join(" · "), "", false);
       }
       return;
     }
@@ -174,7 +193,9 @@ const skillsJson = JSON.stringify(skillCats);
 
   const boot = ["whoami", "projects"];
   if (reduceMotion) {
-    boot.forEach((c) => printLine(null, '<span class="p">&gt;</span> ' + esc(c) + "<br>" + COMMANDS[c]()));
+    boot.forEach((c) =>
+      printLine(null, '<span class="p">&gt;</span> ' + esc(c) + "<br>" + runCommand(c, ctx()).html),
+    );
   } else {
     // Hacker touch: type the boot commands char-by-char, then print output
     // Slow, human-paced typing — fast typing reads as jitter, not smoothness.
@@ -197,7 +218,7 @@ const skillsJson = JSON.stringify(skillCats);
             // Small settle pause before output appears — feels deliberate, not rushed
             setTimeout(() => {
               const out = document.createElement("span");
-              out.innerHTML = "<br>" + COMMANDS[cmd]();
+              out.innerHTML = "<br>" + runCommand(cmd, ctx()).html;
               p.appendChild(out);
             }, 220);
           }
@@ -210,7 +231,7 @@ const skillsJson = JSON.stringify(skillCats);
 
   // Rotating placeholder hints — pauses on focus, off when reduced motion
   if (!reduceMotion) {
-    const hints = ["type `help`", "try `whoami`", "try `projects`", "try `skills`", "try `contact`"];
+    const hints = ["type `help`", "try `whoami`", "try `projects`", "try `theme`", "try `contact`"];
     let hi = 0;
     setInterval(() => {
       if (document.activeElement === input || input.value) return;

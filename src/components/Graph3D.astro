@@ -1,0 +1,47 @@
+---
+import { buildGraph } from "../lib/graph-data";
+
+type Input = Parameters<typeof buildGraph>[0];
+type Props = Input;
+
+const graph = buildGraph(Astro.props);
+---
+
+<div class="graph-hero__stage" id="graph-host">
+  <canvas id="graph-canvas" class="graph-hero__canvas" aria-hidden="true"></canvas>
+  <div id="graph-tip" class="graph-tip" aria-hidden="true"></div>
+</div>
+<script type="application/json" id="graph-data" set:html={JSON.stringify(graph)}></script>
+<script>
+  // three.js (~130 kB gzip) loads after first paint; the page is fully usable without it.
+  const host = document.getElementById("graph-host");
+  const canvas = document.getElementById("graph-canvas") as HTMLCanvasElement | null;
+  const tip = document.getElementById("graph-tip");
+  const raw = document.getElementById("graph-data")?.textContent;
+
+  async function boot() {
+    if (!host || !canvas || !tip || !raw) return;
+    try {
+      const { initGraph } = await import("../scripts/graph3d");
+      const navigate = (href: string) => {
+        const target = document.querySelector(href);
+        if (!target) return;
+        target.scrollIntoView({
+          behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+            ? "auto"
+            : "smooth",
+          block: "start",
+        });
+        history.replaceState(null, "", href);
+      };
+      initGraph(canvas, host, JSON.parse(raw), tip, navigate);
+      host.classList.add("ready");
+    } catch {
+      // No WebGL (or blocked): collapse the stage; the rest of the page is unaffected.
+      host.closest(".graph-hero")?.setAttribute("hidden", "");
+    }
+  }
+
+  if ("requestIdleCallback" in window) requestIdleCallback(boot, { timeout: 1200 });
+  else setTimeout(boot, 200);
+</script>

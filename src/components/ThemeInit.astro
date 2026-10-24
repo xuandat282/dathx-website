@@ -1,0 +1,33 @@
+---
+// Early, render-blocking theme restore — prevents a light/dark flash.
+// No saved choice → follow the system (prefers-color-scheme).
+// Must stay tiny and dependency-free; `is:inline` emits it verbatim.
+---
+
+<script is:inline>
+  (function () {
+    try {
+      var themes = ["light", "dark"];
+      var stored = localStorage.getItem("dathx-theme");
+      var system =
+        window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      var initial = themes.indexOf(stored) >= 0 ? stored : system;
+      var apply = function (t) {
+        document.documentElement.setAttribute("data-theme", t);
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute("content", t === "dark" ? "#1f1e1d" : "#f5f4ee");
+        var btn = document.getElementById("theme-btn");
+        if (btn) btn.textContent = "theme:" + t;
+        try {
+          localStorage.setItem("dathx-theme", t);
+        } catch (e) {}
+      };
+      window.__setTheme = apply;
+      window.__cycleTheme = function () {
+        var cur = document.documentElement.getAttribute("data-theme") || "light";
+        apply(themes[(themes.indexOf(cur) + 1) % themes.length]);
+      };
+      apply(initial);
+    } catch (e) {}
+  })();
+</script>
